@@ -4,7 +4,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 from tqdm import tqdm
 from utils.model_utils import save_model
 from utils.scoring_utils import calculate_metrics
@@ -62,9 +61,16 @@ pred_df = pd.DataFrame({'longitude': X_test['longitude'], 'latitude': X_test['la
 
 # Create a grid of accident counts
 grid_size = 100
-plot_grid_heatmap(pred_df, grid_size, 'SVM Predictions')
+pred_df['grid_lat'] = pd.cut(pred_df['latitude'], bins=grid_size, labels=False)
+pred_df['grid_lon'] = pd.cut(pred_df['longitude'], bins=grid_size, labels=False)
+grid_data = pred_df.groupby(['grid_lat', 'grid_lon']).mean()['accident_count'].unstack()
+
+grid_data = grid_data.iloc[::-1]
+
+# Plot the heatmap
+plot_grid_heatmap(grid_data, title='Predicted Accident Counts Heatmap')
 
 plot_predictions_distribution(pred_df, 'SVM Predictions')
 
 
-save_model(best_model, 'trained_models/rf_model.pkl')
+save_model(best_model, 'ml/trained_models/svm_model.pkl')

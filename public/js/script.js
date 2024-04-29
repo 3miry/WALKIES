@@ -381,6 +381,11 @@ function initMap() {
         styles: darkThemeStyles // Apply the dark theme styles here
     });
 
+    heatmap = new google.maps.visualization.HeatmapLayer({
+        data: [],
+        map: map
+    });
+
     directionsRenderer.setMap(map);
     infoWindow = new google.maps.InfoWindow();
 
@@ -424,6 +429,16 @@ function initMap() {
     });
 }
 
+function addHeatmapData(points) {
+    if (points && points.length > 0) {
+        const heatmapData = points.map(p => new google.maps.visualization.WeightedLocation(p.location, p.weight));
+        heatmap.setData(heatmapData);
+    } else {
+        heatmap.setData([]); // Clear the heatmap if no data points are available
+    }
+}
+
+
 function onPlaceChanged() {
     var place = autocomplete.getPlace();
     if (!place.geometry) {
@@ -461,6 +476,7 @@ function fetchAndDisplayRoute(startLocation) {
         } else {
             displayRoute(data.route);
             displayPOIs(data.pois);
+            fetchAndDisplayHeatmapData();
         }
     })
     .catch(error => {
@@ -469,6 +485,30 @@ function fetchAndDisplayRoute(startLocation) {
     });
 }
 
+function fetchAndDisplayHeatmapData() {
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    // Example API call to fetch prediction data based on current map bounds
+    fetch(`/api/prediction-data?swLat=${sw.lat()}&swLng=${sw.lng()}&neLat=${ne.lat()}&neLng=${ne.lng()}`)
+        .then(response => response.json())
+        .then(data => {
+            const points = data.map(p => {
+                // Assume each data point includes latitude, longitude, and a weight factor
+                return {location: new google.maps.LatLng(p.lat, p.lng), weight: p.prediction};
+            });
+            addHeatmapData(points);
+        })
+        .catch(error => console.error('Error loading heatmap data:', error));
+}
+
+
+function setHeatmapOptions() {
+    heatmap.set('radius', 20); // Adjust the radius of influence of each data point
+    heatmap.set('opacity', 0.8); // Adjust the opacity of the heatmap
+    // Other settings like gradient can also be adjusted
+}
 
 function getSelectedRouteLength() {
     const routeLengthSelect = document.getElementById('distanceSelect');
@@ -556,7 +596,8 @@ function displayPOIs(pois) {
             map: map,
             title: poi.name
         });
-
+        
+        
         // Create a list item for each POI in the sidebar
         const listItem = document.createElement('li');
         listItem.textContent = poi.name + ' (' + poi.type + ')';

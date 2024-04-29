@@ -40,16 +40,18 @@ X_test_scaled = scaler.transform(X_test)
 # Reshape the input data for LSTM
 timesteps = 1
 X_train_scaled = X_train_scaled.reshape((X_train_scaled.shape[0], timesteps, X_train_scaled.shape[1]))
-X_test_scaled = X_test_scaled.reshape((X_test_scaled.shape[0], timesteps, X_test_scaled.shape[1]))
 
 # Build the LSTM model
 model = Sequential()
+# 
 model.add(LSTM(64, activation='relu', input_shape=(timesteps, X_train_scaled.shape[2])))
 model.add(Dense(1))
+
 model.compile(optimizer='adam', loss='mse')
 
 # Set up early stopping
 early_stop = EarlyStopping(monitor='val_loss', patience=10)
+
 
 # Train the LSTM model
 history = model.fit(X_train_scaled, y_train, epochs=100, batch_size=32, validation_split=0.1, callbacks=[early_stop])
@@ -57,6 +59,7 @@ history = model.fit(X_train_scaled, y_train, epochs=100, batch_size=32, validati
 # Evaluate the model on the testing set
 y_pred = model.predict(X_test_scaled)
 mse, mae = calculate_metrics(y_test, y_pred)
+
 
 # Create a DataFrame with longitude, latitude, and predicted accident counts
 pred_df = pd.DataFrame({'longitude': X_test['longitude'], 'latitude': X_test['latitude'], 'accident_count': y_pred.flatten()})
@@ -78,4 +81,6 @@ plot_learning_curve(history)
 
 # Save the model
 
-save_model(model, 'trained_models/knn_model.pkl')
+
+save_model(model, 'ml/trained_models/knn_model.pkl')
+

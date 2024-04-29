@@ -17,6 +17,8 @@ X = pd.read_csv(processed_file_path)
 X['grid_id'] = pd.factorize(list(zip(X['longitude'], X['latitude'])))[0]
 y = X.groupby('grid_id').size().reset_index(name='accident_count')
 
+# Distribution visualisations according to parameters and features e.g. season distribution weather distribuion
+
 # Merge the target variable back into the feature matrix
 X = pd.merge(X, y, on='grid_id', how='left')
 
@@ -73,5 +75,5 @@ plot_grid_heatmap(grid_data, title='Predicted Accident Counts Heatmap')
 print("Plotting feature importance...")
 plot_predictions_distribution(y_test, y_pred, title="KNN Predictions Distribution")
 
-save_model(best_model, 'trained_models/knn_model.pkl')
+save_model(best_model, 'ml/trained_models/knn_model.pkl')
 print("KNN model saved successfully!")

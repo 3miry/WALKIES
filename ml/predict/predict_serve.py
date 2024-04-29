@@ -1,39 +1,51 @@
 from flask import Flask, request, jsonify
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pickle
+import numpy as np
 import pandas as pd
+from data_processing.preprocess_rta_data import preprocess_data
 
 app = Flask(__name__)
 
-# Load the saved models
-knn_model = pickle.load(open('knn_model.pkl', 'rb'))
-rf_model = pickle.load(open('rf_model.pkl', 'rb'))
-svm_model = pickle.load(open('svm_model.pkl', 'rb'))
-lstm_model = pickle.load(open('lstm_model.pkl', 'rb'))
+# Load your trained KNN model
+model = pickle.load(open('ml/trained_models/knn_model.pkl', 'rb'))
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get the input features from the request
-    features = request.json['features']
-
-    # Convert the features into a DataFrame
-    input_data = pd.DataFrame(features, index=[0])
-
-    # Make predictions using the loaded models
-    knn_pred = knn_model.predict(input_data)
-    rf_pred = rf_model.predict(input_data)
-    svm_pred = svm_model.predict(input_data)
-    lstm_pred = lstm_model.predict(input_data)
-
-    # Create a dictionary with the predictions
-    predictions = {
-        'knn': float(knn_pred),
-        'random_forest': float(rf_pred),
-        'svm': float(svm_pred),
-        'lstm': float(lstm_pred)
-    }
-
-    # Return the predictions as a JSON response
-    return jsonify(predictions)
+    data = request.get_json()
+    
+    # Create DataFrame from the incoming JSON data
+    input_data = pd.DataFrame([data])
+    print("DataFrame from JSON:", input_data.columns)
+    
+    # Define the required columns
+    required_columns = ['longitude', 'latitude']
+    missing_columns = [column for column in required_columns if column not in input_data.columns]
+    
+    # Check for missing columns and return an error if any are missing
+    if missing_columns:
+        return jsonify({'error': f'Missing required columns: {missing_columns}'}), 400
+    
+    try:
+        # Add columns that are not in the input data but are required for the model
+        
+        
+        # Process data using the predefined function which should handle the data preparation
+        processed_data = preprocess_data(input_data)
+        
+        # Ensuring that processed_data is in the correct format for prediction (2D array)
+        if not isinstance(processed_data, np.ndarray):
+            processed_data = np.array([processed_data])
+        
+        # Make a prediction using the KNN model
+        prediction = model.predict(processed_data)
+        return jsonify({'prediction': prediction.tolist()})
+    except Exception as e:
+        # Log the exception and return a 500 error
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

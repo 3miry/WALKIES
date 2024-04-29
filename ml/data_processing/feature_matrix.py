@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 # Define the path to the CSV file
-csv_file_path = "processed_rta_dataset.csv"
+csv_file_path = "ml/data/processed_rta_dataset.csv"
 
 df = pd.read_csv(csv_file_path)
 
@@ -25,7 +25,7 @@ input_features = [
 X = df[input_features]
 
 # Save the processed data for machine learning
-processed_file_path = "processed_rta_feature_matrix.csv"
+processed_file_path = "ml/data/processed_rta_feature_matrix.csv"
 X.to_csv(processed_file_path, index=False)
 
 print(f"Processed dataset for machine learning saved to '{processed_file_path}'.")

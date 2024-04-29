@@ -74,4 +74,4 @@ plot_grid_heatmap(grid_data, title='Predicted Accident Counts Heatmap')
 plot_predictions_distribution(pred_df, 'Random Forest Predictions')
 
 # Save the best model
-save_model(best_model, 'trained_models/knn_model.pkl')
+save_model(best_model, 'ml/trained_models/rf_model.pkl')

@@ -76,7 +76,7 @@ function generateMultipleRoutes(startLocation, routeLength) {
 
     // Generate multiple routes with different waypoints and distances
     console.log('Generating routes...');
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 1; i++) {
         const numberOfPoints = Math.floor(Math.random() * (maxPoints - minPoints + 1)) + minPoints;
         const radius = Math.random() * (maxRadius - minRadius) + minRadius;
 
@@ -155,28 +155,27 @@ async function scoreRoute(route, userPreferences) {
     console.log('POI count:', poiCount);
     score += poiCount * 2;
 
-    // Incorporate machine learning predictions into scoring logic
-    
-    // Call Python backend for additional predictions
+    // Call Python backend for ML predictions
     try {
-        const response = await axios.post('http://localhost:5000/predict', route);
-        const predictions = response.data;
-        console.log('Predictions from Python:', predictions);
-        
-        // Incorporate predictions into your scoring logic
-        if (predictions.chanceOfCrime > someThreshold) {
-            score -= penaltyForCrime;
+        // Predict density for each waypoint
+        let aggregatePrediction = 0;
+        for (const waypoint of route.waypoints) {
+            const prediction = await getPrediction(waypoint);
+            aggregatePrediction += prediction;
         }
-        if (predictions.chanceOfTrafficCollision > someThreshold) {
-            score -= penaltyForCollision;
+        const averagePrediction = aggregatePrediction / route.waypoints.length;
+
+        console.log('Average prediction density:', averagePrediction);
+        // Penalize routes with high average prediction densities
+        if (averagePrediction > 0.5) {
+            score -= 20;  
         }
-        // And so on for other predictions
-        
+
     } catch (error) {
-        console.error('Error calling Python backend:', error);
+        console.error('Error incorporating ML predictions:', error);
     }
 
-    console.log('Route score:', score);
+    console.log('Final route score:', score);
     return score;
 }
 
@@ -421,6 +420,41 @@ function getLastMonth() {
     return lastMonth.toISOString().slice(0, 7);
 }
 
+
+// Function to fetch weather data
+async function fetchWeather(apiKey, latitude, longitude, datetime) {
+    const url = `https://api.weatherapi.com/v1/history.json?key=${apiKey}&q=${latitude},${longitude}&dt=${datetime}`;
+    try {
+      const response = await axios.get(url);
+      return response.data;  // Extract and format this data as needed
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      return {};
+    }
+  }
+  
+// Function to call the prediction endpoint
+async function getPrediction(waypoint) {
+    try {
+        const weatherData = await fetchWeather('a1552cda7bab471a91e230830231312', waypoint.latitude, waypoint.longitude, waypoint.datetime);
+        const formattedWaypoint = {
+            longitude: waypoint.lng,
+            latitude: waypoint.lat,
+            datetime: waypoint.datetime,
+            day_of_week: waypoint.day_of_week,
+            sex_of_casualty: waypoint.sex_of_casualty,
+            age_band_of_casualty: waypoint.age_band_of_casualty,
+            weather: weatherData.condition,
+            season: waypoint.season,
+            time_of_day: waypoint.time_of_day
+        };
+        const response = await axios.post('http://localhost:5000/predict', formattedWaypoint);
+        return response.data.prediction;
+    } catch (error) {
+        console.error('Error fetching prediction:', error);
+        return null;
+    }
+}
 
 
 app.listen(PORT, () => {
