@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Walks App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Kdam+Thmor+Pro&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB3VHxQd2YagSkANqk_xmxBrEjl3DaDoBY&callback=initMap&libraries=places,geometry" async defer></script>
+</head>
+<body>
+
+    <div id="map" style="width:100%"></div>
+    <div id="sidebar">
+
+        <img src="images\wanderer_logo_text.png" style="width: 300px;">
+        <button id="toggleSidebar">POIs</button>
+        <h2>Route Features</h2>
+        <ul id="featureList">
+            <!-- POI items will be appended here dynamically -->
+        </ul>
+    </div>
+    <div id="logo">
+        <img src="images\wanderer-removebg-preview.png" style="width: 200px;">
+    </div>
+    <div id="locationField">
+        <input id="autocomplete" placeholder="Enter your location" type="text" />
+        <button id="locateMe">📍 Auto-detect Location</button>
+    </div>
+    <div id="routeDistance">
+        <label for="distanceSelect">Choose a walk distance:   </label>
+        <select id="distanceSelect">
+            <option value="short">Short (0-1 miles)</option>
+            <option value="medium">Medium (1-5 miles)</option>
+            <option value="long">Long (5+ miles)</option>
+        </select>
+        <button id="generateRoute">Generate Route</button>
+    </div>
+    <fieldset id="preferences">
+        <legend>What would you like to include on your route?</legend>
+        <div>
+            <input type="checkbox" id="foodDrink" name="preference" value="foodDrink">
+            <label for="foodDrink">Food and Drink</label>
+        </div>
+        <div>
+            <input type="checkbox" id="shopping" name="preference" value="shopping">
+            <label for="shopping">Shopping</label>
+        </div>
+        <div>
+            <input type="checkbox" id="nature" name="preference" value="nature">
+            <label for="nature">Nature</label>
+        </div>
+        <div>
+            <input type="checkbox" id="historic" name="preference" value="historic">
+            <label for="historic">Historic Sites</label>
+        </div>
+        <div>
+            <input type="checkbox" id="artCulture" name="preference" value="artCulture">
+            <label for="artCulture">Art and Culture</label>
+        </div>
+        <div>
+            <input type="checkbox" id="entertainment" name="preference" value="entertainment">
+            <label for="entertainment">Entertainment</label>
+        </div>
+        <div>
+            <input type="checkbox" id="parksandgardens" name="preference" value="parksandgardens">
+            <label for="entertainment">Parks and Gardens</label>
+        </div>
+        <div>
+            <input type="checkbox" id="playgrounds" name="preference" value="playgrounds">
+            <label for="entertainment">Playgrounds</label>
+        </div>
+
+    </fieldset>
+
+    <div id="infoPanel">
+        <div id="distanceFlag">Distance: <span id="distanceValue">5 km</span></div>
+        <div id="estimatedTimes">
+            Walk: <span id="walkTime">50 min</span> |
+            Jog: <span id="jogTime">30 min</span> |
+            Run: <span id="runTime">20 min</span>
+        </div>
+        <div id="safetyIndicator">
+            Safety: <span id="safetyStatus" class="safety-green">&#x1F7E9;</span>
+        </div>
+        <!-- Additional elements for detailed safety info can be added here -->
+    </div>
+    
+    <script src="/js/script.js"></script>
+
+
+</body>
+</html>
